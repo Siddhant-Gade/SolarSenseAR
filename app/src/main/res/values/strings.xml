@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SolarSense AR</string>
+    <string name="welcome_title">Welcome to SolarSense AR</string>
+    <string name="welcome_subtitle">See your solar future before spending a single rupee</string>
+    <string name="login_google">Continue with Google</string>
+    <string name="login_phone">Continue with Phone</string>
+    <string name="login_guest">Continue as Guest</string>
+    <string name="start_solar_scan">Start Solar Scan</string>
+    <string name="calculate_now">Calculate Now</string>
+    <string name="home">Home</string>
+    <string name="calculator">Calculator</string>
+    <string name="reports">Reports</string>
+    <string name="profile">Profile</string>
+    <string name="location">Location</string>
+    <string name="roof_type">Roof Type</string>
+    <string name="flat">Flat</string>
+    <string name="sloped_15">Sloped 15°</string>
+    <string name="sloped_30">Sloped 30°</string>
+    <string name="panel_count">Number of Panels</string>
+    <string name="panel_wattage">Panel Wattage</string>
+    <string name="monthly_bill">Monthly Electricity Bill</string>
+    <string name="download_pdf">Download PDF</string>
+    <string name="share_whatsapp">Share on WhatsApp</string>
+    <string name="find_installer">Find Installer</string>
+    <string name="apply_subsidy">Apply for Subsidy</string>
+    <string name="ai_summary">AI Summary</string>
+    <string name="pm_surya_ghar">PM Surya Ghar Muft Bijli Yojana</string>
+    <string name="solar_capacity">Solar Capacity</string>
+    <string name="monthly_generation">Monthly Generation</string>
+    <string name="annual_generation">Annual Generation</string>
+    <string name="installation_cost">Installation Cost</string>
+    <string name="subsidy_amount">Subsidy Amount</string>
+    <string name="net_cost">Net Cost</string>
+    <string name="payback_period">Payback Period</string>
+    <string name="savings_25yr">25-Year Savings</string>
+    <string name="co2_saved">CO₂ Saved</string>
+    <string name="trees_equivalent">Trees Equivalent</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="logout">Logout</string>
+    <string name="settings">Settings</string>
+</resources>

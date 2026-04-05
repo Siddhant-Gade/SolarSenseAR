@@ -1,0 +1,50 @@
+{
+  "scheme_name": "PM Surya Ghar Muft Bijli Yojana",
+  "scheme_url": "https://pmsuryaghar.gov.in",
+  "effective_date": "2024-02-13",
+  "max_subsidy_inr": 78000,
+  "slabs": [
+    {
+      "label": "Up to 1 kW",
+      "min_capacity_kw": 0.0,
+      "max_capacity_kw": 1.0,
+      "subsidy_inr": 30000,
+      "subsidy_per_kw_inr": 30000
+    },
+    {
+      "label": "1 kW to 2 kW",
+      "min_capacity_kw": 1.01,
+      "max_capacity_kw": 2.0,
+      "subsidy_inr": 60000,
+      "subsidy_per_kw_inr": 30000
+    },
+    {
+      "label": "2 kW to 3 kW",
+      "min_capacity_kw": 2.01,
+      "max_capacity_kw": 3.0,
+      "subsidy_inr": 78000,
+      "subsidy_per_kw_inr": 18000
+    },
+    {
+      "label": "Above 3 kW",
+      "min_capacity_kw": 3.01,
+      "max_capacity_kw": 10.0,
+      "subsidy_inr": 78000,
+      "subsidy_per_kw_inr": 0,
+      "note": "Subsidy capped at ₹78,000 for systems above 3 kW"
+    }
+  ],
+  "eligibility": [
+    "Indian residential consumer with grid-connected electricity",
+    "Must have a roof-top suitable for solar panel installation",
+    "Must apply through the official PM Surya Ghar portal",
+    "DISCOM approval required before installation"
+  ],
+  "documents_required": [
+    "Electricity bill copy",
+    "Aadhaar card",
+    "Bank passbook/cancelled cheque",
+    "Passport-size photograph",
+    "Roof ownership proof"
+  ]
+}

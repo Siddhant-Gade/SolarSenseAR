@@ -1,0 +1,25 @@
+{
+  "districts": {
+    "Nagpur": { "state": "Maharashtra", "avg_ghi": 5.8 },
+    "Mumbai": { "state": "Maharashtra", "avg_ghi": 5.2 },
+    "Pune": { "state": "Maharashtra", "avg_ghi": 5.5 },
+    "Delhi": { "state": "Delhi", "avg_ghi": 5.5 },
+    "Jaipur": { "state": "Rajasthan", "avg_ghi": 6.0 },
+    "Jodhpur": { "state": "Rajasthan", "avg_ghi": 6.2 },
+    "Chennai": { "state": "Tamil Nadu", "avg_ghi": 5.6 },
+    "Bengaluru": { "state": "Karnataka", "avg_ghi": 5.4 },
+    "Hyderabad": { "state": "Telangana", "avg_ghi": 5.7 },
+    "Ahmedabad": { "state": "Gujarat", "avg_ghi": 5.9 },
+    "Lucknow": { "state": "Uttar Pradesh", "avg_ghi": 5.3 },
+    "Kolkata": { "state": "West Bengal", "avg_ghi": 4.9 },
+    "Patna": { "state": "Bihar", "avg_ghi": 5.1 },
+    "Bhopal": { "state": "Madhya Pradesh", "avg_ghi": 5.6 },
+    "Chandigarh": { "state": "Punjab", "avg_ghi": 5.4 },
+    "Thiruvananthapuram": { "state": "Kerala", "avg_ghi": 5.1 },
+    "Guwahati": { "state": "Assam", "avg_ghi": 4.7 },
+    "Dehradun": { "state": "Uttarakhand", "avg_ghi": 5.2 },
+    "Ranchi": { "state": "Jharkhand", "avg_ghi": 5.0 },
+    "Raipur": { "state": "Chhattisgarh", "avg_ghi": 5.5 },
+    "DEFAULT": { "state": "Unknown", "avg_ghi": 5.5 }
+  }
+}
