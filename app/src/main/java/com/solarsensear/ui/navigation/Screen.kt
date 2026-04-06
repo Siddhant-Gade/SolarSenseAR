@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String) {
     data object Splash : Screen("splash")
+    data object Onboarding : Screen("onboarding")
     data object Login : Screen("login")
     data object Main : Screen("main")
     data object Report : Screen("report/{reportIndex}") {
@@ -21,6 +22,7 @@ sealed class Screen(val route: String) {
     data object AR : Screen("ar/{panelCount}/{roofType}") {
         fun createRoute(panelCount: Int, roofType: String) = "ar/$panelCount/$roofType"
     }
+    data object Vendors : Screen("vendors")
 }
 
 enum class BottomNavItem(

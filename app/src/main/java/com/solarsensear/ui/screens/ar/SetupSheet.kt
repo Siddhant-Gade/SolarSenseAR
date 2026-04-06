@@ -1,182 +1,311 @@
 package com.solarsensear.ui.screens.ar
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.animation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.solarsensear.ui.components.AccentButton
-import com.solarsensear.ui.components.InputStepper
+import com.solarsensear.ui.theme.Amber500
+import com.solarsensear.ui.theme.Navy700
 
-/**
- * Bottom sheet displayed before launching the AR scan.
- * Collects: GPS location (auto), roof type, monthly electricity bill.
- * Pre-fills with compelling demo defaults per README Phase 7.3.
- */
+private val ROOF_TYPES = listOf("Flat" to "flat", "Sloped" to "sloped")
+private val STATES = listOf(
+    "Andhra Pradesh", "Delhi", "Gujarat", "Karnataka", "Kerala",
+    "Madhya Pradesh", "Maharashtra", "Rajasthan", "Tamil Nadu",
+    "Telangana", "Uttar Pradesh", "West Bengal"
+)
+private val BRANDS = listOf("Any Brand", "Tata Power", "Adani Solar", "Waaree", "Luminous", "Vikram Solar")
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetupSheet(
     onDismiss: () -> Unit,
-    onStartScan: (panelCount: Int, roofType: String, monthlyBill: Double) -> Unit,
-    detectedCity: String = "Detecting...",
-    isLocating: Boolean = false
+    onStartScan: (panelCount: Int, roofType: String, locationName: String, monthlyBill: Double) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
+    var selectedRoofType by remember { mutableStateOf("flat") }
     var panelCount by remember { mutableIntStateOf(12) }
-    var monthlyBill by remember { mutableStateOf("3000") }
-    var selectedRoofIndex by remember { mutableIntStateOf(0) }
-    var roofDropdownExpanded by remember { mutableStateOf(false) }
-
-    val roofTypes = listOf("Flat", "Sloped 15°", "Sloped 30°")
-    val roofApiValues = listOf("flat", "sloped_15", "sloped_30")
+    var roofAreaSqFt by remember { mutableFloatStateOf(800f) }
+    var monthlyBill by remember { mutableFloatStateOf(3000f) }
+    var locationName by remember { mutableStateOf("Nagpur") }
+    var selectedBrand by remember { mutableStateOf("Any Brand") }
+    var brandExpanded by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surface
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(vertical = 12.dp)
+                    .width(40.dp)
+                    .height(4.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                        shape = RoundedCornerShape(2.dp)
+                    )
+            )
+        }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            Text(
-                text = "Setup Solar Scan",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            // ── Location (auto-detected via GPS) ──
+            // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Filled.LocationOn,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.secondary
-                )
-                Column(modifier = Modifier.weight(1f)) {
+                Column {
                     Text(
-                        text = "Location",
-                        style = MaterialTheme.typography.labelMedium,
+                        text = "Configure Your Scan",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "All fields are optional",
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
-                        text = if (isLocating) "Detecting location..." else detectedCity,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
                 }
-                IconButton(onClick = { /* Re-detect location */ }) {
-                    Icon(
-                        imageVector = Icons.Filled.MyLocation,
-                        contentDescription = "Detect location",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Filled.Close, contentDescription = "Close")
                 }
             }
 
-            // ── Roof Type Dropdown ──
-            ExposedDropdownMenuBox(
-                expanded = roofDropdownExpanded,
-                onExpandedChange = { roofDropdownExpanded = it }
-            ) {
-                OutlinedTextField(
-                    value = roofTypes[selectedRoofIndex],
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Roof Type") },
+            HorizontalDivider()
+
+            // Location field
+            OutlinedTextField(
+                value = locationName,
+                onValueChange = { locationName = it },
+                label = { Text("City / Location") },
+                leadingIcon = {
+                    Icon(Icons.Filled.LocationOn, contentDescription = null, tint = Amber500)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            // Roof type selector
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = "Roof Type",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .menuAnchor()
+                        .selectableGroup(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    ROOF_TYPES.forEach { (label, value) ->
+                        val selected = selectedRoofType == value
+                        Surface(
+                            selected = selected,
+                            onClick = { selectedRoofType = value },
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (selected) Amber500.copy(alpha = 0.15f)
+                                    else MaterialTheme.colorScheme.surfaceVariant,
+                            border = if (selected)
+                                ButtonDefaults.outlinedButtonBorder.copy(
+                                    brush = androidx.compose.ui.graphics.SolidColor(Amber500)
+                                )
+                            else null,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = label,
+                                modifier = Modifier.padding(vertical = 14.dp),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                color = if (selected) Amber500 else MaterialTheme.colorScheme.onSurface,
+                                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Panel count stepper
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Panel Count",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "$panelCount panels · ${String.format("%.1f", panelCount * 0.55)} kW",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Amber500,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Slider(
+                    value = panelCount.toFloat(),
+                    onValueChange = { panelCount = it.toInt() },
+                    valueRange = 4f..40f,
+                    steps = 35,
+                    colors = SliderDefaults.colors(
+                        thumbColor = Amber500,
+                        activeTrackColor = Amber500,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("4", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                    Text("40", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                }
+            }
+
+            // Roof area slider
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Roof Area (optional)",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "${roofAreaSqFt.toInt()} sq.ft",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Slider(
+                    value = roofAreaSqFt,
+                    onValueChange = { roofAreaSqFt = it },
+                    valueRange = 200f..3000f,
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+            }
+
+            // Monthly bill slider
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Monthly Bill",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "₹${monthlyBill.toInt()}/month",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Amber500,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Slider(
+                    value = monthlyBill,
+                    onValueChange = { monthlyBill = it },
+                    valueRange = 500f..15000f,
+                    colors = SliderDefaults.colors(
+                        thumbColor = Amber500,
+                        activeTrackColor = Amber500,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("₹500", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                    Text("₹15,000", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                }
+            }
+
+            // Brand dropdown
+            ExposedDropdownMenuBox(
+                expanded = brandExpanded,
+                onExpandedChange = { brandExpanded = !brandExpanded }
+            ) {
+                OutlinedTextField(
+                    value = selectedBrand,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Preferred Brand (optional)") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = brandExpanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    shape = RoundedCornerShape(12.dp)
                 )
                 ExposedDropdownMenu(
-                    expanded = roofDropdownExpanded,
-                    onDismissRequest = { roofDropdownExpanded = false }
+                    expanded = brandExpanded,
+                    onDismissRequest = { brandExpanded = false }
                 ) {
-                    roofTypes.forEachIndexed { index, type ->
+                    BRANDS.forEach { brand ->
                         DropdownMenuItem(
-                            text = { Text(type) },
+                            text = { Text(brand) },
                             onClick = {
-                                selectedRoofIndex = index
-                                roofDropdownExpanded = false
+                                selectedBrand = brand
+                                brandExpanded = false
                             }
                         )
                     }
                 }
             }
 
-            // ── Panel Count ──
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "Number of Panels",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // CTA button
+            Button(
+                onClick = {
+                    onStartScan(panelCount, selectedRoofType, locationName, monthlyBill.toDouble())
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Amber500
                 )
-                InputStepper(
-                    value = panelCount,
-                    onValueChange = { panelCount = it },
-                    minValue = 1,
-                    maxValue = 50
+            ) {
+                Text(
+                    text = "Start AR Scan",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Navy700
                 )
             }
-
-            // ── Monthly Bill ──
-            OutlinedTextField(
-                value = monthlyBill,
-                onValueChange = { monthlyBill = it.filter { c -> c.isDigit() } },
-                label = { Text("Monthly Electricity Bill (₹)") },
-                placeholder = { Text("e.g. 3000") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-                prefix = { Text("₹ ") },
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // ── Start Scan Button ──
-            AccentButton(
-                text = "Start AR Scan",
-                onClick = {
-                    val bill = monthlyBill.toDoubleOrNull() ?: 2000.0
-                    onStartScan(panelCount, roofApiValues[selectedRoofIndex], bill)
-                }
-            )
         }
     }
 }

@@ -1,41 +1,29 @@
 package com.solarsensear.ui.navigation
 
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
 import androidx.navigation.navArgument
+import com.solarsensear.ui.screens.ar.ARScreen
+import com.solarsensear.ui.screens.ar.SetupSheet
 import com.solarsensear.ui.screens.calculator.CalculatorScreen
 import com.solarsensear.ui.screens.home.HomeScreen
 import com.solarsensear.ui.screens.login.LoginScreen
+import com.solarsensear.ui.screens.onboarding.OnboardingScreen
 import com.solarsensear.ui.screens.profile.ProfileScreen
 import com.solarsensear.ui.screens.report.ReportScreen
 import com.solarsensear.ui.screens.reports.ReportsListScreen
 import com.solarsensear.ui.screens.splash.SplashScreen
-import com.solarsensear.ui.screens.ar.ARScreen
-import com.solarsensear.ui.screens.ar.SetupSheet
+import com.solarsensear.ui.screens.vendors.VendorsScreen
 
 @Composable
 fun AppNavGraph(
@@ -53,8 +41,18 @@ fun AppNavGraph(
         composable(Screen.Splash.route) {
             SplashScreen(
                 onNavigateToLogin = {
-                    navController.navigate(Screen.Login.route) {
+                    navController.navigate(Screen.Onboarding.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(
+                onFinish = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Onboarding.route) { inclusive = true }
                     }
                 }
             )
@@ -98,17 +96,24 @@ fun AppNavGraph(
         ) { backStackEntry ->
             val panelCount = backStackEntry.arguments?.getInt("panelCount") ?: 12
             val roofType = backStackEntry.arguments?.getString("roofType") ?: "flat"
+
+            // In a real implementation, these would come from the setup flow saved state
             ARScreen(
                 panelCount = panelCount,
                 roofType = roofType,
+                locationName = "Nagpur",
+                monthlyBillInr = 3000.0,
                 onBack = { navController.popBackStack() },
-                onCapture = { finalPanelCount ->
-                    // After capture, navigate to report with the latest mock report
+                onCapture = { _ ->
                     navController.navigate(Screen.Report.createRoute(0)) {
                         popUpTo(Screen.Main.route) { inclusive = false }
                     }
                 }
             )
+        }
+
+        composable(Screen.Vendors.route) {
+            VendorsScreen(onBack = { navController.popBackStack() })
         }
     }
 }
@@ -186,7 +191,7 @@ fun MainScaffold(
                 if (showSetupSheet) {
                     SetupSheet(
                         onDismiss = { showSetupSheet = false },
-                        onStartScan = { panelCount, roofType, _ ->
+                        onStartScan = { panelCount, roofType, location, bill ->
                             showSetupSheet = false
                             rootNavController.navigate(Screen.AR.createRoute(panelCount, roofType))
                         }
