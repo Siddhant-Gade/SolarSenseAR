@@ -2,10 +2,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/solarsense"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./solarsense.db"
 
     # JWT
     SECRET_KEY: str = "change-me-in-production-use-openssl-rand-hex-32"
@@ -18,10 +18,12 @@ class Settings(BaseSettings):
     S3_BUCKET: str = "solarsense-snapshots"
     S3_REGION: str = "ap-south-1"
 
-    # Cost constants (INR)
-    COST_PER_KW_INR: int = 60000
+    # Solar constants (INR)
+    COST_PER_KW_INR: int = 60_000
     GRID_RATE_PER_UNIT: float = 8.0
     PANEL_WATT: int = 550
+    PERFORMANCE_RATIO: float = 0.80
+    CO2_PER_KWH_KG: float = 0.0816
 
 
 settings = Settings()

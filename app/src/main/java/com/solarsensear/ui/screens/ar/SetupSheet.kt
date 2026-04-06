@@ -1,26 +1,31 @@
 package com.solarsensear.ui.screens.ar
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.solarsensear.data.local.LocationHelper
 import com.solarsensear.ui.theme.Amber500
 import com.solarsensear.ui.theme.Navy700
+import kotlinx.coroutines.launch
 
 private val ROOF_TYPES = listOf("Flat" to "flat", "Sloped" to "sloped")
 private val STATES = listOf(
@@ -43,6 +48,33 @@ fun SetupSheet(
     var locationName by remember { mutableStateOf("Nagpur") }
     var selectedBrand by remember { mutableStateOf("Any Brand") }
     var brandExpanded by remember { mutableStateOf(false) }
+    var isFetchingLocation by remember { mutableStateOf(false) }
+    var locationError by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // Runtime permission launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        val granted = grants[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                      grants[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (granted) {
+            isFetchingLocation = true
+            locationError = null
+            scope.launch {
+                try {
+                    locationName = LocationHelper.fetchCityName(context)
+                } catch (e: Exception) {
+                    locationError = "Could not get location: ${e.localizedMessage}"
+                } finally {
+                    isFetchingLocation = false
+                }
+            }
+        } else {
+            locationError = "Location permission denied"
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -92,20 +124,71 @@ fun SetupSheet(
                 }
             }
 
-            HorizontalDivider()
+            Divider()
 
-            // Location field
-            OutlinedTextField(
-                value = locationName,
-                onValueChange = { locationName = it },
-                label = { Text("City / Location") },
-                leadingIcon = {
-                    Icon(Icons.Filled.LocationOn, contentDescription = null, tint = Amber500)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp)
-            )
+            // Location field with GPS auto-detect
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                OutlinedTextField(
+                    value = locationName,
+                    onValueChange = { locationName = it; locationError = null },
+                    label = { Text("City / Location") },
+                    leadingIcon = {
+                        Icon(Icons.Filled.LocationOn, contentDescription = null, tint = Amber500)
+                    },
+                    trailingIcon = {
+                        if (isFetchingLocation) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = Amber500
+                            )
+                        } else {
+                            IconButton(
+                                onClick = {
+                                    if (LocationHelper.hasPermission(context)) {
+                                        isFetchingLocation = true
+                                        locationError = null
+                                        scope.launch {
+                                            try {
+                                                locationName = LocationHelper.fetchCityName(context)
+                                            } catch (e: Exception) {
+                                                locationError = "Could not get location: ${e.localizedMessage}"
+                                            } finally {
+                                                isFetchingLocation = false
+                                            }
+                                        }
+                                    } else {
+                                        permissionLauncher.launch(
+                                            arrayOf(
+                                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                                Manifest.permission.ACCESS_COARSE_LOCATION
+                                            )
+                                        )
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.GpsFixed,
+                                    contentDescription = "Use my location",
+                                    tint = Amber500
+                                )
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    isError = locationError != null
+                )
+                locationError?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                }
+            }
 
             // Roof type selector
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

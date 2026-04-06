@@ -8,7 +8,7 @@ import retrofit2.http.Query
 /**
  * OpenStreetMap Nominatim API — free reverse geocoding.
  * Base URL: https://nominatim.openstreetmap.org/
- * Required: User-Agent header per Nominatim ToS.
+ * Required: User-Agent + Accept headers per Nominatim ToS.
  * Rate limit: 1 request/second.
  */
 interface NominatimService {
@@ -17,8 +17,9 @@ interface NominatimService {
     suspend fun reverseGeocode(
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
-        @Query("format") format: String = "json",
-        @Query("addressdetails") addressDetails: Int = 1,
-        @Header("User-Agent") userAgent: String = "SolarSenseAR/1.0 (solarsensear@app.com)"
+        @Query("format") format: String,
+        @Query("addressdetails") addressDetails: Int,
+        @Header("User-Agent") userAgent: String,
+        @Header("Accept") accept: String
     ): NominatimResponse
 }

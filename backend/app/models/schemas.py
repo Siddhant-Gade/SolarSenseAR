@@ -24,20 +24,20 @@ class TokenResponse(BaseModel):
     email: str
 
 
-# ── Analysis ──────────────────────────────────────────────────────────────────
+# ── Analysis (REST /api/v1/analyze) ──────────────────────────────────────────
 
 class PanelConfig(BaseModel):
     panel_count: int = Field(ge=1, le=100)
-    total_kw: float
+    total_kw: float = 0.0
     roof_area_sq_ft: float | None = None
 
 
 class AnalyzeRequest(BaseModel):
-    image_base64: str | None = None          # Optional AR snapshot
+    image_base64: str | None = None
     panel_config: PanelConfig
     location: dict[str, float]               # {"lat": ..., "lng": ...}
     location_name: str = "Unknown"
-    roof_type: str = "flat"                  # "flat" | "sloped"
+    roof_type: str = "flat"
     monthly_bill_inr: float = 2000.0
     shadow_loss_percent: float = Field(default=5.0, ge=0, le=50)
 
@@ -75,6 +75,60 @@ class AnalyzeResponse(BaseModel):
     irradiance_kwh_m2_day: float
     subsidy_breakdown: SubsidyBreakdownSchema
     ai_narrative: str
+
+
+# ── Android-compatible schemas (/generate-report, /vendors-nearby) ────────────
+
+class GenerateReportRequest(BaseModel):
+    """Matches Android ReportRequest.kt exactly."""
+    latitude: float
+    longitude: float
+    panel_count: int = Field(ge=1, le=100)
+    panel_watt: int | None = 550
+    roof_type: str = "flat"
+    monthly_bill_inr: float = 2000.0
+    shadow_loss_percent: float = Field(default=5.0, ge=0, le=50)
+    location_name: str | None = None
+    state: str | None = None
+
+
+class SubsidyBreakdownAndroid(BaseModel):
+    """Matches Android SubsidyBreakdown.kt (uses 1_to_2kw key)."""
+    up_to_1kw: int
+    one_to_2kw: int = Field(alias="1_to_2kw", default=0)
+    above_2kw: int
+
+    model_config = {"populate_by_name": True}
+
+
+class GenerateReportResponse(BaseModel):
+    """Matches Android ReportResponse.kt exactly."""
+    scan_id: str = ""
+    capacity_kw: float
+    monthly_generation_units: int
+    annual_generation_units: int
+    installation_cost_inr: int
+    subsidy_inr: int
+    net_cost_inr: int
+    annual_savings_inr: int
+    payback_years: float
+    savings_25yr_inr: int
+    co2_kg_annual: int
+    trees_equivalent: int
+    usage_coverage_percent: int
+    irradiance_kwh_m2_day: float
+    ai_narrative: str
+    subsidy_scheme: str
+    subsidy_breakdown: SubsidyBreakdownSchema
+
+
+class VendorNearbyRequest(BaseModel):
+    """Matches Android VendorNearbyRequest data class."""
+    latitude: float
+    longitude: float
+    radius_km: float = Field(default=25.0, alias="radiusKm")
+
+    model_config = {"populate_by_name": True}
 
 
 # ── Vendor ────────────────────────────────────────────────────────────────────

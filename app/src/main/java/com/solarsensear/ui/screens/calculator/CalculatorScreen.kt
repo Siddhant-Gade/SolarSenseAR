@@ -167,7 +167,7 @@ fun CalculatorScreen() {
                 color = MaterialTheme.colorScheme.primary
             )
 
-            HorizontalDivider()
+            Divider()
 
             // ── Live Results ──
             Text(

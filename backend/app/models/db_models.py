@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Float, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -17,14 +17,18 @@ class User(Base):
     auth_provider: Mapped[str] = mapped_column(String(50), default="email")
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
-    scans: Mapped[list["Scan"]] = relationship("Scan", back_populates="user", lazy="dynamic")
+    scans: Mapped[list["Scan"]] = relationship("Scan", back_populates="user", lazy="selectin",
+                                                foreign_keys="[Scan.user_id]",
+                                                primaryjoin="User.id == Scan.user_id")
 
 
 class Scan(Base):
     __tablename__ = "scans"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
+
+    # Nullable FK — supports anonymous/guest scans without a User record
+    user_id: Mapped[str] = mapped_column(String(36), nullable=False, default="anonymous", index=True)
 
     location_name: Mapped[str] = mapped_column(String(255), default="")
     location_lat: Mapped[float] = mapped_column(Float, default=0.0)
@@ -45,15 +49,20 @@ class Scan(Base):
 
     co2_kg_annual: Mapped[int] = mapped_column(Integer, default=0)
     shadow_loss_percent: Mapped[float] = mapped_column(Float, default=0.0)
-
     irradiance_kwh_m2_day: Mapped[float] = mapped_column(Float, default=5.5)
+
     ai_narrative: Mapped[str] = mapped_column(Text, default="")
     ar_snapshot_url: Mapped[str] = mapped_column(String(1024), default="")
     report_pdf_url: Mapped[str] = mapped_column(String(1024), default="")
 
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow, index=True)
 
-    user: Mapped["User"] = relationship("User", back_populates="scans")
+    # Optional relationship — only populated when user_id matches a real User
+    user: Mapped["User | None"] = relationship(
+        "User", back_populates="scans",
+        foreign_keys=[user_id],
+        primaryjoin="Scan.user_id == User.id",
+    )
 
 
 class Vendor(Base):
@@ -69,5 +78,5 @@ class Vendor(Base):
     price_per_kw_inr: Mapped[int] = mapped_column(Integer, default=60000)
     lat: Mapped[float] = mapped_column(Float, default=0.0)
     lng: Mapped[float] = mapped_column(Float, default=0.0)
-    verified: Mapped[bool] = mapped_column(Boolean, default=True)
+    verified: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
     years_in_business: Mapped[int] = mapped_column(Integer, default=5)
