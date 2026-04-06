@@ -13,8 +13,9 @@ object SubsidyCalculator {
     fun calculate(capacityKw: Double): Int {
         return when {
             capacityKw <= 1.0 -> 30000
-            capacityKw <= 2.0 -> 60000
-            else -> 78000   // Max cap per government policy
+            // Fix 15: prorate 1–2 kW slab: ₹30K base + ₹18K per kW above 1kW (max ₹60K at 2kW)
+            capacityKw <= 2.0 -> (30000 + ((capacityKw - 1.0) * 30000)).toInt().coerceAtMost(60000)
+            else -> 78000   // Max cap per government policy (≥2kW gets ₹78K flat)
         }
     }
 

@@ -6,31 +6,47 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 
+/**
+ * Retrofit interface for the SolarSense FastAPI backend.
+ * Base URL is set via BuildConfig.BACKEND_URL.
+ */
 interface ApiService {
 
-    @POST("/api/generate-report")
+    /**
+     * Generates a full solar report (AI narrative + financial calculations).
+     * POST /generate-report
+     */
+    @POST("generate-report")
     suspend fun generateReport(@Body request: ReportRequest): ReportResponse
 
-    @GET("/health")
+    /**
+     * Health check — used to warm up the Render free-tier container.
+     * GET /health
+     */
+    @GET("health")
     suspend fun healthCheck(): Map<String, String>
 
-    @POST("/api/vendors/nearby")
-    suspend fun getVendorsNearby(@Body request: VendorNearbyRequest): List<VendorApiResponse>
+    /**
+     * Fetches verified solar vendors near a given location.
+     * POST /vendors-nearby
+     */
+    @POST("vendors-nearby")
+    suspend fun getVendorsNearby(@Body request: VendorNearbyRequest): List<ApiVendor>
 }
 
 data class VendorNearbyRequest(
     val latitude: Double,
     val longitude: Double,
-    val radius_km: Int = 15
+    val radiusKm: Int = 25
 )
 
-data class VendorApiResponse(
-    val name: String,
-    val city: String,
-    val rating: Double,
-    val reviews: Int,
-    val price_per_kw_inr: Int,
-    val phone: String,
-    val latitude: Double,
-    val longitude: Double
+data class ApiVendor(
+    val name: String = "",
+    val city: String = "",
+    val rating: Double = 0.0,
+    val reviews: Int = 0,
+    val price_per_kw_inr: Int = 0,
+    val phone: String = "",
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0
 )

@@ -67,6 +67,7 @@ object MockData {
             shadowLossPercent = 3.5,
             usageCoveragePercent = 72,
             irradianceKwhM2Day = 5.55,
+            aiNarrative = mockNarrative,  // Fix 13: was missing — AI card invisible for this report
             createdAt = System.currentTimeMillis() - 172800000
         ),
         SolarReport(

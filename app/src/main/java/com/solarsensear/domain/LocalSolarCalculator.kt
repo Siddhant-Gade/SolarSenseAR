@@ -68,9 +68,11 @@ object LocalSolarCalculator {
         val annualGenKwh = capacityKw * irradiance * 365 * PERFORMANCE_RATIO * tiltFactor *
                 (1 - shadowLossPercent / 100.0)
 
-        // Monthly breakdown
+        // Monthly breakdown — normalize factors so they always sum to 12.0
+        // (raw factors sum to 11.9, which causes breakdown.sum() != annualGenUnits)
+        val factorSum = MONTHLY_IRRADIANCE_FACTOR.sum()
         val monthlyBreakdown = MONTHLY_IRRADIANCE_FACTOR.map { factor ->
-            ((annualGenKwh / 12.0) * factor).toInt()
+            ((annualGenKwh * (factor / factorSum))).toInt()
         }
         val monthlyGenUnits = monthlyBreakdown.average().toInt()
         val annualGenUnits = monthlyBreakdown.sum()

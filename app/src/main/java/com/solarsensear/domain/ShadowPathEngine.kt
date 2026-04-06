@@ -6,7 +6,6 @@ import kotlin.math.asin
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.math.PI
 
 /**
  * Calculates sun position (azimuth & elevation) for a given GPS location and time.

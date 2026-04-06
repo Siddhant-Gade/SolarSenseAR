@@ -7,7 +7,7 @@ object SolarCalculator {
     private const val COST_PER_WATT_INR = 60      // ₹60/W current Indian market rate
     private const val ELECTRICITY_RATE_INR = 8     // ₹8/unit average across India
     private const val CO2_PER_UNIT_KG = 0.82       // India's grid emission factor (CEA 2023)
-    private const val TREES_PER_KG_CO2 = 0.012     // 1 tree absorbs ~84kg CO₂/year
+    private const val KG_CO2_PER_TREE_PER_YEAR = 84.0 // 1 tree absorbs ~84 kg CO₂/year
     private const val PERFORMANCE_RATIO = 0.75     // India standard PR
 
     fun calculate(
@@ -37,7 +37,7 @@ object SolarCalculator {
         )
         val annualSavings = monthlySavings * 12
         val paybackYears = if (annualSavings > 0) {
-            (netCost / annualSavings * 10).toInt() / 10.0
+            (netCost.toDouble() / annualSavings * 10).toInt() / 10.0
         } else {
             99.0
         }
@@ -45,7 +45,7 @@ object SolarCalculator {
 
         // Environmental
         val co2Annual = (annualGen * CO2_PER_UNIT_KG).toInt()
-        val treesEquiv = (co2Annual * TREES_PER_KG_CO2).toInt()
+        val treesEquiv = (co2Annual / KG_CO2_PER_TREE_PER_YEAR).toInt()
 
         return SolarReport(
             panelCount = panelCount,

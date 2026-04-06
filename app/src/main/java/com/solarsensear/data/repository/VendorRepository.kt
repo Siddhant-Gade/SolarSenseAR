@@ -14,55 +14,88 @@ class VendorRepository {
     private val api = RetrofitClient.apiService
 
     /**
-     * Fetches vendors near a location.
-     * Falls back to local mock data filtered by distance if the API is unavailable.
+     * Fetch vendors from API.
+     * If API fails → fallback to local filtered data.
      */
     suspend fun getVendorsNearby(
         latitude: Double,
         longitude: Double,
         radiusKm: Int = 25
     ): Result<List<Vendor>> {
+
         return try {
+
             val response = api.getVendorsNearby(
-                VendorNearbyRequest(latitude, longitude, radiusKm)
+                VendorNearbyRequest(
+                    latitude = latitude,
+                    longitude = longitude,
+                    radiusKm = radiusKm
+                )
             )
+
             val vendors = response.map { apiVendor ->
                 Vendor(
                     id = "v_${apiVendor.name.hashCode()}",
                     name = apiVendor.name,
                     city = apiVendor.city,
-                    rating = apiVendor.rating,
+                    rating = apiVendor.rating.toFloat(),  // Double → Float
                     reviews = apiVendor.reviews,
-                    pricePerKwInr = apiVendor.price_per_kw_inr,
+                    pricePerKwInr = apiVendor.price_per_kw_inr,  // Int → Int (no conversion)
                     phone = apiVendor.phone,
-                    latitude = apiVendor.latitude,
-                    longitude = apiVendor.longitude
+                    latitude = apiVendor.latitude,   // already Double
+                    longitude = apiVendor.longitude  // already Double
                 )
             }
+
             Result.success(vendors)
+
         } catch (e: Exception) {
-            // Offline fallback: filter mock vendors by distance
-            val nearby = MockData.sampleVendors.filter { vendor ->
-                haversineKm(latitude, longitude, vendor.latitude, vendor.longitude) <= radiusKm
-            }.sortedBy { vendor ->
-                haversineKm(latitude, longitude, vendor.latitude, vendor.longitude)
-            }.take(3)
+
+            // 🔁 Fallback (Offline Mode)
+            val nearby = MockData.sampleVendors
+                .filter { vendor ->
+                    haversineKm(
+                        latitude,
+                        longitude,
+                        vendor.latitude,
+                        vendor.longitude
+                    ) <= radiusKm.toDouble()   // ✅ FIX HERE
+                }
+                .sortedBy { vendor ->
+                    haversineKm(
+                        latitude,
+                        longitude,
+                        vendor.latitude,
+                        vendor.longitude
+                    )
+                }
+                .take(3)
+
             Result.success(nearby)
         }
     }
 
-    /** Haversine formula — distance in km between two GPS points. */
+    /**
+     * Haversine Formula
+     * Calculates distance (in KM) between two lat-long points
+     */
     private fun haversineKm(
         lat1: Double, lon1: Double,
         lat2: Double, lon2: Double
     ): Double {
-        val r = 6371.0 // Earth radius in km
+
+        val r = 6371.0
+
         val dLat = Math.toRadians(lat2 - lat1)
         val dLon = Math.toRadians(lon2 - lon1)
+
         val a = sin(dLat / 2) * sin(dLat / 2) +
-                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+                cos(Math.toRadians(lat1)) *
+                cos(Math.toRadians(lat2)) *
                 sin(dLon / 2) * sin(dLon / 2)
+
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
         return r * c
     }
 }

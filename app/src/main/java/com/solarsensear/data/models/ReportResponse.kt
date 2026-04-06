@@ -9,6 +9,8 @@ data class ReportResponse(
     val monthlyGenerationUnits: Int,
     @SerializedName("annual_generation_units")
     val annualGenerationUnits: Int,
+    @SerializedName("annual_savings_inr")
+    val annualSavingsInr: Int,   // Fix 14: was missing — backend could never populate this
     @SerializedName("installation_cost_inr")
     val installationCostInr: Int,
     @SerializedName("subsidy_inr")

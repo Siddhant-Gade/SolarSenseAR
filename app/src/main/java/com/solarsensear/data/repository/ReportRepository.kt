@@ -62,6 +62,7 @@ private fun ReportResponse.toSolarReport(request: ReportRequest): SolarReport {
         capacityKw = capacityKw,
         monthlyGenerationUnits = monthlyGenerationUnits,
         annualGenerationUnits = annualGenerationUnits,
+        annualSavingsInr = annualSavingsInr,  // Fix 6: was missing — always defaulted to 0
         installationCostInr = installationCostInr,
         subsidyInr = subsidyInr,
         netCostInr = netCostInr,

@@ -179,7 +179,7 @@ private fun VendorDetailCard(vendor: Vendor) {
             HorizontalDivider()
 
             // Star rating bar
-            RatingBar(rating = vendor.rating)
+            RatingBar(rating = vendor.rating, reviews = vendor.reviews)
 
             // Contact button
             Button(
@@ -208,7 +208,7 @@ private fun VendorStat(label: String, value: String) {
 }
 
 @Composable
-private fun RatingBar(rating: Float) {
+private fun RatingBar(rating: Float, reviews: Int) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -224,7 +224,7 @@ private fun RatingBar(rating: Float) {
             )
         }
         Text(
-            "(${(rating * 100 - (rating.toInt() * 100)).toInt() + rating.toInt() * 20}+ reviews)",
+            "(${vendor.reviews} reviews)",
             style = MaterialTheme.typography.labelSmall,
             color = Color.Gray
         )

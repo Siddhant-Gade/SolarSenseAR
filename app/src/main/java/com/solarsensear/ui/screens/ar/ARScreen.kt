@@ -35,9 +35,6 @@ import com.solarsensear.ui.components.ShadowSlider
 import com.solarsensear.ui.theme.Amber500
 import com.solarsensear.ui.theme.Navy900
 import io.github.sceneview.ar.ARSceneView
-import io.github.sceneview.ar.arcore.createAnchorOrNull
-import io.github.sceneview.ar.arcore.isValid
-import io.github.sceneview.ar.node.ARCameraNode
 import kotlinx.coroutines.delay
 
 /**
@@ -400,7 +397,9 @@ fun ARScreen(
                             locationName = locationName,
                             roofType = roofType,
                             monthlyBillInr = monthlyBillInr,
-                            shadowLossPercent = ((shadowHour - 12f) * 1.5).coerceIn(0.0, 15.0)
+                            // Fix 9: Shadow longest at dawn/dusk (hour far from noon), not at noon.
+                            // Use abs(hour - 12) so 6AM and 6PM both give max loss, noon gives 0.
+                            shadowLossPercent = (kotlin.math.abs(shadowHour - 12f) * 1.5).coerceIn(0.0, 15.0)
                         )
                     },
                     containerColor = Amber500,
